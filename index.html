@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice to Text App</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #app-container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    textarea[readonly] {
+      background-color: #eee;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      margin: 5px;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <h1>Voice to Text App</h1>
+    <label>
+      Language:
+      <select id="languageSelect">
+        <option value="en-US">English</option>
+        <option value="hi-IN">Hindi</option>
+      </select>
+    </label>
+    <button id="startBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop Recording</button>
+    <textarea id="output" readonly placeholder="Your converted text will appear here"></textarea>
+    <button id="copyBtn" disabled>Copy to Clipboard</button>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const outputTextarea = document.getElementById('output');
+    const copyBtn = document.getElementById('copyBtn');
+    const languageSwitch = document.getElementById('languageSwitch');
+    let recognition;
+
+    function initializeRecognition() {
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = languageSwitch.checked ? 'hi-IN' : 'en-US';
+
+      recognition.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        outputTextarea.value = transcript;
+        copyBtn.disabled = false;
+      };
+
+      recognition.onend = function () {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      };
+
+      recognition.onerror = function (event) {
+        console.error('Speech recognition error:', event.error);
+      };
+    }
+
+    initializeRecognition();
+
+    startBtn.addEventListener('click', function () {
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      copyBtn.disabled = true;
+      initializeRecognition();
+      recognition.start();
+    });
+
+    stopBtn.addEventListener('click', function () {
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      recognition.stop();
+    });
+
+    copyBtn.addEventListener('click', function () {
+      outputTextarea.select();
+      document.execCommand('copy');
+    });
+
+    languageSwitch.addEventListener('change', function () {
+      recognition.stop();
+      initializeRecognition();
+    });
+  </script>
+</body>
+</html>
